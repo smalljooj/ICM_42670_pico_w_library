@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include "pico/stdlib.h"
 #include "icm_42670.h"
 #include "hardware/gpio.h"
 #include "hardware/spi.h"
@@ -95,6 +96,64 @@ int16_t icm_42670_read_bank0_register_16(uint8_t reg)
     uint8_t high = icm_42670_read_bank0_register(reg);
     uint8_t low = icm_42670_read_bank0_register(reg + 1);
     return (int16_t)((high << 8) | low);
+}
+
+
+uint8_t icm_42670_read_mreg1_register(uint8_t reg)
+{
+    uint8_t data;
+    icm_42670_write_bank0_register(BLK_SEL_R, 0x00);
+    icm_42670_write_bank0_register(MADDR_R, reg);
+    sleep_us(10);
+    data = icm_42670_read_bank0_register(M_R);
+    sleep_us(10);
+    return data;
+}
+
+void icm_42670_write_mreg1_register(uint8_t reg, uint8_t data)
+{
+    icm_42670_write_bank0_register(BLK_SEL_W, 0x00);
+    icm_42670_write_bank0_register(MADDR_W, reg);
+    icm_42670_write_bank0_register(M_W, data);
+    sleep_us(10);
+}
+
+uint8_t icm_42670_read_mreg2_register(uint8_t reg)
+{
+    uint8_t data;
+    icm_42670_write_bank0_register(BLK_SEL_R, 0x28);
+    icm_42670_write_bank0_register(MADDR_R, reg);
+    sleep_us(10);
+    data = icm_42670_read_bank0_register(M_R);
+    sleep_us(10);
+    return data;
+}
+
+void icm_42670_write_mreg2_register(uint8_t reg, uint8_t data)
+{
+    icm_42670_write_bank0_register(BLK_SEL_W, 0x28);
+    icm_42670_write_bank0_register(MADDR_W, reg);
+    icm_42670_write_bank0_register(M_W, data);
+    sleep_us(10);
+}
+
+uint8_t icm_42670_read_mreg3_register(uint8_t reg)
+{
+    uint8_t data;
+    icm_42670_write_bank0_register(BLK_SEL_R, 0x50);
+    icm_42670_write_bank0_register(MADDR_R, reg);
+    sleep_us(10);
+    data = icm_42670_read_bank0_register(M_R);
+    sleep_us(10);
+    return data;
+}
+
+void icm_42670_write_mreg3_register(uint8_t reg, uint8_t data)
+{
+    icm_42670_write_bank0_register(BLK_SEL_W, 0x50);
+    icm_42670_write_bank0_register(MADDR_W, reg);
+    icm_42670_write_bank0_register(M_W, data);
+    sleep_us(10);
 }
 
 void icm_42670_read_all_sensors(icm_42670_all_sensors_data* data) 

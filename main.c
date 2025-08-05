@@ -14,7 +14,8 @@ const float PI = 3.14159265359f;
 #define I2C_SDA 8
 #define I2C_SCL 9
 #define RESET_PIN 20
-#define BOOT_PIN 21
+#define BOOT_PIN 26
+#define GND_PIN 14 
 
 void gpio_callback(uint gpio, uint32_t events);
 
@@ -66,7 +67,7 @@ int main()
         float gz_dps = data.gz / 16.4f;
         
         printf("Accel: [%.2fg %.2fg %.2fg] | Gyro: [%.2f %.2f %.2f] dps\n", ax_g, ay_g, az_g, gx_dps, gy_dps, gz_dps);
-        printf("temp: %ld - %f \n", data.temperature, icm_42670_read_temperature());
+        printf("temp: %ld - %f \n", data.temperature, icm_42670_read_temperature_celsius());
 
         sleep_ms(1000);
     }
@@ -82,6 +83,8 @@ void gpio_callback(uint gpio, uint32_t events) {
 
 void configure_boot_pin()
 {
+    gpio_init(GND_PIN);
+    gpio_set_dir(GND_PIN, GPIO_OUT);
     // Configuração dos pinos
     gpio_init(RESET_PIN);
     gpio_set_dir(RESET_PIN, GPIO_IN);
