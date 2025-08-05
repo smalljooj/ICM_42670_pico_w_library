@@ -1,6 +1,7 @@
 #ifndef ICM_42670_REGISTERS
 #define ICM_42670_REGISTERS
 
+// bank 0 registers
 #define MCLK_RDY          0x00
 #define DEVICE_CONFIG     0x01
 #define SIGNAL_PATH_RESET 0x02

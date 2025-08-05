@@ -12,6 +12,10 @@ uint8_t icm_42670_read_bank0_register(uint8_t reg);
 int16_t icm_42670_read_bank0_register_16(uint8_t reg);
 uint8_t icm_42670_write_bank0_register(uint8_t reg, uint8_t data);
 void icm_42670_read_all_sensors(icm_42670_all_sensors_data* data);
-float icm_42670_read_temperature(); 
+float icm_42670_read_temperature_celsius(); 
+float icm_42670_read_temperature_kelvin();
+float icm_42670_read_temperature_fahrenheit();
+void icm_42670_read_gyro(icm_42670_gyro_data* data); 
+void icm_42670_read_accel(icm_42670_accel_data* data); 
 
 #endif

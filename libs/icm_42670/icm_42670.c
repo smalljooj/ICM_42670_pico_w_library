@@ -67,7 +67,8 @@ uint8_t icm_42670_status(void)
     printf("who am i: %02x\n", icm_42670_read_bank0_register(WHO_AM_I));
 }
 
-uint8_t icm_42670_read_bank0_register(uint8_t reg) {
+uint8_t icm_42670_read_bank0_register(uint8_t reg) 
+{
     uint8_t tx_buf[2] = {0};
     uint8_t rx_buf[2] = {0};
     tx_buf[0] = reg | 0x80;
@@ -79,7 +80,8 @@ uint8_t icm_42670_read_bank0_register(uint8_t reg) {
     return rx_buf[1];
 }
 
-uint8_t icm_42670_write_bank0_register(uint8_t reg, uint8_t data) {
+uint8_t icm_42670_write_bank0_register(uint8_t reg, uint8_t data) 
+{
     uint8_t tx_buf[2] = {reg & 0x7F, data};
     uint8_t rx_buf[2] = {0};
     gpio_put(PIN_CS, 0);
@@ -88,13 +90,15 @@ uint8_t icm_42670_write_bank0_register(uint8_t reg, uint8_t data) {
     return 0;
 }
 
-int16_t icm_42670_read_bank0_register_16(uint8_t reg) {
+int16_t icm_42670_read_bank0_register_16(uint8_t reg) 
+{
     uint8_t high = icm_42670_read_bank0_register(reg);
     uint8_t low = icm_42670_read_bank0_register(reg + 1);
     return (int16_t)((high << 8) | low);
 }
 
-void icm_42670_read_all_sensors(icm_42670_all_sensors_data* data) {
+void icm_42670_read_all_sensors(icm_42670_all_sensors_data* data) 
+{
     data->ax = icm_42670_read_bank0_register_16(ACCEL_DATA_X1);
     data->ay = icm_42670_read_bank0_register_16(ACCEL_DATA_Y1);
     data->az = icm_42670_read_bank0_register_16(ACCEL_DATA_Z1);
@@ -104,7 +108,32 @@ void icm_42670_read_all_sensors(icm_42670_all_sensors_data* data) {
     data->temperature = icm_42670_read_bank0_register_16(TEMP_DATA1);
 }
 
-float icm_42670_read_temperature() {
+float icm_42670_read_temperature_celsius() 
+{
     int16_t raw_temp =icm_42670_read_bank0_register_16(TEMP_DATA1);
     return (raw_temp / 132.48f) + 25.0f;
+}
+
+float icm_42670_read_temperature_kelvin() 
+{
+    return icm_42670_read_temperature_celsius() + 273.15f;
+}
+
+float icm_42670_read_temperature_fahrenheit() 
+{
+    return (icm_42670_read_temperature_celsius() * 1.8) + 32;
+}
+
+void icm_42670_read_gyro(icm_42670_gyro_data* data)
+{
+    data->gx = icm_42670_read_bank0_register_16(GYRO_DATA_X1);
+    data->gy = icm_42670_read_bank0_register_16(GYRO_DATA_Y1);
+    data->gz = icm_42670_read_bank0_register_16(GYRO_DATA_Z1);
+}
+
+void icm_42670_read_accel(icm_42670_accel_data* data)
+{
+    data->ax = icm_42670_read_bank0_register_16(ACCEL_DATA_X1);
+    data->ay = icm_42670_read_bank0_register_16(ACCEL_DATA_Y1);
+    data->az = icm_42670_read_bank0_register_16(ACCEL_DATA_Z1);
 }
