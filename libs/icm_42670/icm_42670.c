@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <math.h>
 #include "pico/stdlib.h"
 #include "icm_42670.h"
 #include "hardware/gpio.h"
@@ -9,6 +10,15 @@
 #define PIN_CS   10
 #define PIN_SCK  18
 #define PIN_MOSI 19
+
+icm_42670_kalman_t pitch_filter;
+icm_42670_kalman_t  roll_filter;
+bool filters_initialized = false;
+absolute_time_t last_time;
+
+void icm_42670_kalman_init(icm_42670_kalman_t* kf, double Q_angle, double Q_bias, double R_measure);
+double icm_42670_kalman_get_angle(icm_42670_kalman_t* kf, double newAngle, double newRate, double dt);
+void icm_42670_kalman_init_struct();
 
 void init_spi(void)
 {
@@ -62,6 +72,7 @@ uint8_t init_icm_42670(icm_42670_t* icm_42670_init_struct)
         icm_42670_init_struct->accel_ui_avg << 5 |
         icm_42670_init_struct->accel_ui_filt_bw 
     );
+
     return 1;
 }
 
@@ -167,7 +178,7 @@ void icm_42670_write_mreg3_register(uint8_t reg, uint8_t data)
     sleep_us(10);
 }
 
-void icm_42670_read_all_sensors(icm_42670_all_sensors_data* data) 
+void icm_42670_read_all_sensors(icm_42670_all_sensors_data_t* data) 
 {
     data->ax = icm_42670_read_bank0_register_16(ACCEL_DATA_X1);
     data->ay = icm_42670_read_bank0_register_16(ACCEL_DATA_Y1);
@@ -194,16 +205,113 @@ float icm_42670_read_temperature_fahrenheit()
     return (icm_42670_read_temperature_celsius() * 1.8) + 32;
 }
 
-void icm_42670_read_gyro(icm_42670_gyro_data* data)
+void icm_42670_read_gyro(icm_42670_gyro_data_t* data)
 {
     data->gx = icm_42670_read_bank0_register_16(GYRO_DATA_X1);
     data->gy = icm_42670_read_bank0_register_16(GYRO_DATA_Y1);
     data->gz = icm_42670_read_bank0_register_16(GYRO_DATA_Z1);
 }
 
-void icm_42670_read_accel(icm_42670_accel_data* data)
+void icm_42670_read_accel(icm_42670_accel_data_t* data)
 {
     data->ax = icm_42670_read_bank0_register_16(ACCEL_DATA_X1);
     data->ay = icm_42670_read_bank0_register_16(ACCEL_DATA_Y1);
     data->az = icm_42670_read_bank0_register_16(ACCEL_DATA_Z1);
+}
+
+void icm_42670_kalman_init(icm_42670_kalman_t* kf, double Q_angle, double Q_bias, double R_measure) {
+    kf->Q_angle = Q_angle;
+    kf->Q_bias = Q_bias;
+    kf->R_measure = R_measure;
+
+    kf->angle = 0.0;
+    kf->bias = 0.0;
+    kf->rate = 0.0;
+
+    kf->P[0][0] = 0.0;
+    kf->P[0][1] = 0.0;
+    kf->P[1][0] = 0.0;
+    kf->P[1][1] = 0.0;
+}
+
+void icm_42670_kalman_init_struct() {
+    if (!filters_initialized) {
+        icm_42670_kalman_init(&pitch_filter, 0.001, 0.003, 0.03);
+        icm_42670_kalman_init(&roll_filter, 0.001, 0.003, 0.03);
+        last_time = get_absolute_time();
+        filters_initialized = true;
+    }
+}
+
+void icm_42670_kalman_update() {
+    icm_42670_kalman_init_struct();
+
+    icm_42670_all_sensors_data_t data;
+    icm_42670_read_all_sensors(&data);
+    float ax_g = data.ax / 2048.0f;
+    float ay_g = data.ay / 2048.0f;
+    float az_g = data.az / 2048.0f;
+    float gx_dps = data.gx / 16.4f;
+    float gy_dps = data.gy / 16.4f;
+    float gz_dps = data.gz / 16.4f;
+
+    absolute_time_t current_time = get_absolute_time();
+    double dt = (double)absolute_time_diff_us(last_time, current_time) / 1000000.0;
+    last_time = current_time;
+
+    double accel_pitch = atan2(ay_g, sqrt(ax_g * ax_g + az_g * az_g)) * 180.0 / M_PI;
+    double accel_roll = atan2(-ax_g, az_g) * 180.0 / M_PI;
+
+    icm_42670_kalman_get_angle(&roll_filter, accel_roll, gx_dps, dt);
+    icm_42670_kalman_get_angle(&pitch_filter, accel_pitch, gy_dps, dt);
+}
+
+double icm_42670_kalman_get_angle(icm_42670_kalman_t* kf, double newAngle, double newRate, double dt) {
+    kf->rate = newRate - kf->bias;
+    kf->angle += dt * kf->rate;
+
+    kf->P[0][0] += dt * (dt * kf->P[1][1] - kf->P[0][1] - kf->P[1][0] + kf->Q_angle);
+    kf->P[0][1] -= dt * kf->P[1][1];
+    kf->P[1][0] -= dt * kf->P[1][1];
+    kf->P[1][1] += dt * kf->Q_bias;
+
+    double S = kf->P[0][0] + kf->R_measure;
+    double K[2];
+    K[0] = kf->P[0][0] / S;
+    K[1] = kf->P[1][0] / S;
+
+    double y = newAngle - kf->angle;
+    kf->angle += K[0] * y;
+    kf->bias += K[1] * y;
+
+    double P00_temp = kf->P[0][0];
+    double P01_temp = kf->P[0][1];
+
+    kf->P[0][0] -= K[0] * P00_temp;
+    kf->P[0][1] -= K[0] * P01_temp;
+    kf->P[1][0] -= K[1] * P00_temp;
+    kf->P[1][1] -= K[1] * P01_temp;
+
+    return kf->angle;
+}
+
+void icm_42670_kalman_get_angles_autoupdate(icm_42670_angles_data_t* angles)
+{
+    icm_42670_all_sensors_data_t data;
+    icm_42670_read_all_sensors(&data);
+    float ax_g = data.ax / 2048.0f;
+    float ay_g = data.ay / 2048.0f;
+    float az_g = data.az / 2048.0f;
+    float gx_dps = data.gx / 16.4f;
+    float gy_dps = data.gy / 16.4f;
+    float gz_dps = data.gz / 16.4f;
+
+    icm_42670_kalman_init_struct();
+    icm_42670_kalman_update(ax_g, ay_g, az_g, gx_dps, gy_dps);
+    icm_42670_kalman_get_angles(angles);
+}
+
+void icm_42670_kalman_get_angles(icm_42670_angles_data_t* angles) {
+    angles->pitch = pitch_filter.angle;
+    angles->roll = roll_filter.angle;
 }

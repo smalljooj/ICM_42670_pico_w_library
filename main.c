@@ -56,8 +56,14 @@ int main()
     gpio_pull_up(I2C_SDA);
     gpio_pull_up(I2C_SCL);
 
-    icm_42670_all_sensors_data data;
+    icm_42670_all_sensors_data_t data;
+    icm_42670_angles_data_t angles;
+
+    uint64_t last_time = time_us_64();
+
     while (true) {
+        uint64_t current_time = time_us_64();
+
         icm_42670_read_all_sensors(&data);
         float ax_g = data.ax / 2048.0f;
         float ay_g = data.ay / 2048.0f;
@@ -66,11 +72,16 @@ int main()
         float gx_dps = data.gx / 16.4f;
         float gy_dps = data.gy / 16.4f;
         float gz_dps = data.gz / 16.4f;
-        
-        printf("Accel: [%.2fg %.2fg %.2fg] | Gyro: [%.2f %.2f %.2f] dps\n", ax_g, ay_g, az_g, gx_dps, gy_dps, gz_dps);
-        printf("temp: %ld - %f \n", data.temperature, icm_42670_read_temperature_celsius());
 
-        sleep_ms(1000);
+        double pitch, roll;
+
+        icm_42670_kalman_update();
+
+        if (current_time - last_time >= 1000000) {
+            last_time = current_time;
+            icm_42670_kalman_get_angles(&angles);
+            printf("pitch: %f  -   roll: %f\n\n", angles.pitch, angles.roll);
+        }
     }
 }
 

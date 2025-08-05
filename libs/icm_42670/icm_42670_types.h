@@ -2,18 +2,34 @@
 #define ICM_42670_TYPES
 
 typedef struct {
+    double Q_angle;
+    double Q_bias;
+    double R_measure;
+
+    double angle;
+    double bias;
+    double rate;
+
+    double P[2][2];
+} icm_42670_kalman_t;
+
+typedef struct {
     float gx, gy, gz;  // Gyroscope (dps)
-} icm_42670_gyro_data;
+} icm_42670_gyro_data_t;
 
 typedef struct {
     float ax, ay, az;  // Accelerometer (g)
-} icm_42670_accel_data;
+} icm_42670_accel_data_t;
+
+typedef struct {
+    float pitch, roll;  // kalman angles
+} icm_42670_angles_data_t;
 
 typedef struct {
     float ax, ay, az;  // Accelerometer (g)
     float gx, gy, gz;  // Gyroscope (dps)
     int16_t temperature; // Temperature
-} icm_42670_all_sensors_data;
+} icm_42670_all_sensors_data_t;
 
 typedef enum {
     GYRO_OFF = 0,
