@@ -47,6 +47,7 @@ int main()
         .accel_ui_filt_bw = ACCEL_FILT_BYPASSED
     };
     init_icm_42670(&icm_init);
+
     icm_42670_status();
 
     i2c_init(I2C_PORT, 400*1000);

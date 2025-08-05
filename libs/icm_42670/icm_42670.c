@@ -21,8 +21,18 @@ void init_spi(void)
     gpio_put(PIN_CS, 1);
 }
 
-void init_icm_42670(icm_42670_t* icm_42670_init_struct)
+uint8_t init_icm_42670(icm_42670_t* icm_42670_init_struct)
 {
+    //soft reset
+    icm_42670_write_bank0_register(SIGNAL_PATH_RESET, 0x10);
+    uint64_t start_time = time_us_64();
+    while((icm_42670_read_bank0_register(INT_STATUS) & 0x10) == 0) {
+        if(time_us_64() - start_time > 10000) {
+            return 0; 
+        }
+        __asm volatile ("nop");
+    }
+
     icm_42670_write_bank0_register(PWR_MGMT0, 
         icm_42670_init_struct->accel_lp_clk_sel << 6 |
         icm_42670_init_struct->idle << 3 |
@@ -52,6 +62,7 @@ void init_icm_42670(icm_42670_t* icm_42670_init_struct)
         icm_42670_init_struct->accel_ui_avg << 5 |
         icm_42670_init_struct->accel_ui_filt_bw 
     );
+    return 1;
 }
 
 uint8_t icm_42670_status(void)
