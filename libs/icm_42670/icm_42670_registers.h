@@ -1,7 +1,7 @@
 #ifndef ICM_42670_REGISTERS
 #define ICM_42670_REGISTERS
 
-// bank 0 registers
+// USER BANk0 registers
 #define MCLK_RDY          0x00
 #define DEVICE_CONFIG     0x01
 #define SIGNAL_PATH_RESET 0x02
@@ -65,5 +65,58 @@
 #define BLK_SEL_R         0x7C
 #define MADDR_R           0x7D
 #define M_R               0x7E
+
+// USER BANK MREG1 registers
+#define TMST_CONFIG1    0x00
+#define FIFO_CONFIG5    0x01
+#define FIFO_CONFIG6    0x02
+#define FSYNC_CONFIG    0x03
+#define INT_CONFIG0     0x04
+#define INT_CONFIG1     0x05
+#define SENSOR_CONFIG3  0x06
+#define ST_CONFIG       0x13
+#define SELFTEST        0x14
+#define INTF_CONFIG6    0x23
+#define INTF_CONFIG10   0x25
+#define INTF_CONFIG7    0x28
+#define OTP_CONFIG      0x2B
+#define INT_SOURCE6     0x2F
+#define INT_SOURCE7     0x30
+#define INT_SOURCE8     0x31
+#define INT_SOURCE9     0x32
+#define INT_SOURCE10    0x33
+#define APEX_CONFIG2    0x44
+#define APEX_CONFIG3    0x45
+#define APEX_CONFIG4    0x46
+#define APEX_CONFIG5    0x47
+#define APEX_CONFIG9    0x48
+#define APEX_CONFIG10   0x49
+#define APEX_CONFIG11   0x4A
+#define ACCEL_WDM_X_THR 0x4B
+#define ACCEL_WDM_Y_THR 0x4C
+#define ACCEL_WDM_Z_THR 0x4D
+#define OFFSET_USER0    0x4E
+#define OFFSET_USER1    0x4F
+#define OFFSET_USER2    0x50
+#define OFFSET_USER3    0x51
+#define OFFSET_USER4    0x52
+#define OFFSET_USER5    0x53
+#define OFFSET_USER6    0x54
+#define OFFSET_USER7    0x55
+#define ST_STATUS1      0x63
+#define ST_STATUS2      0x64
+#define FDR_CONFIG      0x66
+#define APEX_CONFIG12   0x67
+
+// USER BANK MREG2 registers
+#define OTP_CTRL7 0x06
+
+// USER BANK MREG3 registers
+#define XA_ST_DATA  0x00
+#define YA_ST_DATA  0x01
+#define ZA_ST_DATA  0x02
+#define XG_ST_DATA  0x03
+#define YG_ST_DATA  0x04
+#define ZG_ST_DATA  0x05
 
 #endif
