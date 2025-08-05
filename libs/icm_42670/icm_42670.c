@@ -219,7 +219,8 @@ void icm_42670_read_accel(icm_42670_accel_data_t* data)
     data->az = icm_42670_read_bank0_register_16(ACCEL_DATA_Z1);
 }
 
-void icm_42670_kalman_init(icm_42670_kalman_t* kf, double Q_angle, double Q_bias, double R_measure) {
+void icm_42670_kalman_init(icm_42670_kalman_t* kf, double Q_angle, double Q_bias, double R_measure) 
+{
     kf->Q_angle = Q_angle;
     kf->Q_bias = Q_bias;
     kf->R_measure = R_measure;
@@ -234,8 +235,10 @@ void icm_42670_kalman_init(icm_42670_kalman_t* kf, double Q_angle, double Q_bias
     kf->P[1][1] = 0.0;
 }
 
-void icm_42670_kalman_init_struct() {
-    if (!filters_initialized) {
+void icm_42670_kalman_init_struct() 
+{
+    if (!filters_initialized) 
+    {
         icm_42670_kalman_init(&pitch_filter, 0.001, 0.003, 0.03);
         icm_42670_kalman_init(&roll_filter, 0.001, 0.003, 0.03);
         last_time = get_absolute_time();
@@ -243,7 +246,8 @@ void icm_42670_kalman_init_struct() {
     }
 }
 
-void icm_42670_kalman_update() {
+void icm_42670_kalman_update() 
+{
     icm_42670_kalman_init_struct();
 
     icm_42670_all_sensors_data_t data;
@@ -266,7 +270,8 @@ void icm_42670_kalman_update() {
     icm_42670_kalman_get_angle(&pitch_filter, accel_pitch, gy_dps, dt);
 }
 
-double icm_42670_kalman_get_angle(icm_42670_kalman_t* kf, double newAngle, double newRate, double dt) {
+double icm_42670_kalman_get_angle(icm_42670_kalman_t* kf, double newAngle, double newRate, double dt) 
+{
     kf->rate = newRate - kf->bias;
     kf->angle += dt * kf->rate;
 
@@ -311,7 +316,8 @@ void icm_42670_kalman_get_angles_autoupdate(icm_42670_angles_data_t* angles)
     icm_42670_kalman_get_angles(angles);
 }
 
-void icm_42670_kalman_get_angles(icm_42670_angles_data_t* angles) {
+void icm_42670_kalman_get_angles(icm_42670_angles_data_t* angles) 
+{
     angles->pitch = pitch_filter.angle;
     angles->roll = roll_filter.angle;
 }
