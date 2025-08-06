@@ -44,7 +44,7 @@ int main()
         .temp_filt_bw = TEMP_FILT_BYPASSED,
         .gyro_ui_filt_bw = GYRO_FILT_BYPASSED,
         .accel_ui_avg = ACCEL_AVG_32X,
-        .accel_ui_filt_bw = ACCEL_FILT_BYPASSED
+        .accel_ui_filt_bw = ACCEL_FILT_BYPASSED,
     };
     init_icm_42670(&icm_init);
 
@@ -60,6 +60,7 @@ int main()
     icm_42670_angles_data_t angles;
 
     uint64_t last_time = time_us_64();
+
 
     while (true) {
         uint64_t current_time = time_us_64();
@@ -80,6 +81,7 @@ int main()
         if (current_time - last_time >= 1000000) {
             last_time = current_time;
             icm_42670_kalman_get_angles(&angles);
+            printf("Accel: [%.2fg %.2fg %.2fg] | Gyro: [%.2f %.2f %.2f] dps\n", ax_g, ay_g, az_g, gx_dps, gy_dps, gz_dps);
             printf("pitch: %f  -   roll: %f\n\n", angles.pitch, angles.roll);
         }
     }

@@ -41,6 +41,7 @@
         "gpio.h": "c",
         "icm_42670.h": "c",
         "stdio.h": "c",
-        "icm_42670_types.h": "c"
+        "icm_42670_types.h": "c",
+        "icm_42670_registers.h": "c"
     }
 }

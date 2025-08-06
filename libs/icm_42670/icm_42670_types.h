@@ -133,6 +133,31 @@ typedef enum {
     ACCEL_FILT_16_HZ = 7,
 } ACCEL_UI_FILT_BW;
 
+typedef enum {
+    INT_MODE_PULSED = 0,
+    INT_MODE_LATCHED = 1,
+} INT_MODE;
+
+typedef enum {
+    OPEN_DRAIN  = 0,
+    PUSH_PULL = 1,
+} INT_DRIVE_CIRCUIT;
+
+typedef enum {
+    ACTIVE_LOW = 0,
+    ACTIVE_HIGH = 1,
+} INT_POLARITY;
+
+typedef enum {
+    FIFO_MODE_STREAM = 0,
+    FIDO_MODE_STOP_FULL = 1
+} FIFO_MODE;
+
+typedef enum {
+    FIFO_NOT_BYPASSED = 0,
+    FIDO_BYPASSED = 1
+} FIFO_BYPASS;
+
 typedef struct {
     GYRO_MODE gyro_mode;
     ACCEL_MODE accel_mode;
@@ -147,5 +172,19 @@ typedef struct {
     ACCEL_UI_AVG accel_ui_avg;
     ACCEL_UI_FILT_BW accel_ui_filt_bw;
 } icm_42670_t;
+
+typedef struct {
+    INT_MODE int2_mode;
+    INT_DRIVE_CIRCUIT int2_drive_circuit;
+    INT_POLARITY int2_polarity;
+    INT_MODE int1_mode;
+    INT_DRIVE_CIRCUIT int1_drive_circuit;
+    INT_POLARITY int1_polarity;
+} icm_42670_int_t;
+
+typedef struct {
+
+} icm_42670_fifo_t;
+
 
 #endif

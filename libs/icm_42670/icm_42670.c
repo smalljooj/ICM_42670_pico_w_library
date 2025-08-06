@@ -76,6 +76,18 @@ uint8_t init_icm_42670(icm_42670_t* icm_42670_init_struct)
     return 1;
 }
 
+uint8_t icm_42670_interrupt_config(icm_42670_int_t* interrupt_config)
+{
+    icm_42670_write_bank0_register(INT_CONFIG, 
+        interrupt_config->int2_mode << 5 |
+        interrupt_config->int2_drive_circuit << 4 |
+        interrupt_config->int2_polarity << 3 |
+        interrupt_config->int1_mode << 2 |
+        interrupt_config->int1_drive_circuit << 1 |
+        interrupt_config->int1_polarity
+    );
+}
+
 uint8_t icm_42670_status(void)
 {
     printf("mclk: %02x\n", icm_42670_read_bank0_register(MCLK_RDY));
