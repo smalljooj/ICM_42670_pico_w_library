@@ -158,6 +158,59 @@ typedef enum {
     FIDO_BYPASSED = 1
 } FIFO_BYPASS;
 
+typedef enum {
+    DMP_POWER_SAVE_OFF = 0, 
+    DMP_POWER_SAVE_ON = 1 
+} DMP_POWER_SAVE;
+
+typedef enum {
+    DMP_INIT_OFF = 0, 
+    DMP_INIT_ON = 1 
+} DMP_INIT;
+
+typedef enum {
+    NO_MEM_RESET = 0, 
+    MEM_RESET = 1, 
+} DMP_MEM_RESET;
+
+typedef enum {
+    SMD_OFF = 0,
+    SMD_ON = 1
+} SMD_ENABLE;
+
+typedef enum {
+    FREEFALL_OFF = 0,
+    FREEFALL_ON = 1
+} FF_ENABLE;
+
+typedef enum {
+    TILT_DETECT_OFF = 0,
+    TILT_DETECT_ON = 1
+} TILT_ENABLE;
+
+typedef enum {
+    PEDOMETER_OFF = 0,
+    PEDOMETER_ON = 1
+} PED_ENABLE;
+
+typedef enum {
+    DMP_ODR_25_HZ = 0,
+    DMP_ODR_400_HZ = 1,
+    DMP_ODR_50_HZ = 2,
+    DMP_ODR_100_HZ = 3,
+} DMP_ODR;
+
+typedef enum {
+    DMP_RUNNING = 0,
+    DMP_IDLE = 1,
+} DMP_IDLE;
+
+typedef enum {
+    UNKNOWN = 0,
+    WALK = 1,
+    RUN = 2
+} PEDOMETER_ACTIVITY;
+
 typedef struct {
     GYRO_MODE gyro_mode;
     ACCEL_MODE accel_mode;
@@ -183,7 +236,19 @@ typedef struct {
 } icm_42670_int_t;
 
 typedef struct {
+    DMP_MEM_RESET dmp_mem_reset;
+    DMP_INIT dmp_init;
+    DMP_POWER_SAVE dmp_power_save;
+    DMP_ODR dmp_odr;
+    PED_ENABLE pedometer_en;
+    TILT_ENABLE tilt_en;
+    FF_ENABLE freefall_en;
+    SMD_ENABLE smd_en;
+}icm_42670_apex_t;
 
+typedef struct {
+    FIFO_MODE fifo_mode;
+    FIFO_BYPASS fifo_bypass;
 } icm_42670_fifo_t;
 
 

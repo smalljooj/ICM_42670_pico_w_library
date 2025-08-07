@@ -88,6 +88,31 @@ uint8_t icm_42670_interrupt_config(icm_42670_int_t* interrupt_config)
     );
 }
 
+uint8_t icm_42670_fifo_config(icm_42670_fifo_t* fifo_config)
+{
+    icm_42670_write_bank0_register(FIFO_CONFIG1,
+        fifo_config->fifo_mode << 1 |
+        fifo_config->fifo_bypass
+    );
+}
+
+uint8_t icm_42670_apex_config(icm_42670_apex_t* apex_config)
+{
+    icm_42670_write_bank0_register(APEX_CONFIG0,
+    apex_config->dmp_power_save << 3 |
+    apex_config->dmp_init << 2 |
+    apex_config->dmp_mem_reset 
+    ); 
+
+    icm_42670_write_bank0_register(APEX_CONFIG1,
+        apex_config->smd_en << 6 |
+        apex_config->freefall_en << 5 |
+        apex_config->tilt_en << 4 |
+        apex_config->pedometer_en << 3 |
+        apex_config->dmp_odr
+    );
+}
+
 uint8_t icm_42670_status(void)
 {
     printf("mclk: %02x\n", icm_42670_read_bank0_register(MCLK_RDY));
@@ -314,17 +339,8 @@ double icm_42670_kalman_get_angle(icm_42670_kalman_t* kf, double newAngle, doubl
 
 void icm_42670_kalman_get_angles_autoupdate(icm_42670_angles_data_t* angles)
 {
-    icm_42670_all_sensors_data_t data;
-    icm_42670_read_all_sensors(&data);
-    float ax_g = data.ax / 2048.0f;
-    float ay_g = data.ay / 2048.0f;
-    float az_g = data.az / 2048.0f;
-    float gx_dps = data.gx / 16.4f;
-    float gy_dps = data.gy / 16.4f;
-    float gz_dps = data.gz / 16.4f;
-
     icm_42670_kalman_init_struct();
-    icm_42670_kalman_update(ax_g, ay_g, az_g, gx_dps, gy_dps);
+    icm_42670_kalman_update();
     icm_42670_kalman_get_angles(angles);
 }
 
@@ -332,4 +348,26 @@ void icm_42670_kalman_get_angles(icm_42670_angles_data_t* angles)
 {
     angles->pitch = pitch_filter.angle;
     angles->roll = roll_filter.angle;
+}
+
+uint8_t icm_42670_dmp_is_running(void)
+{
+    return (icm_42670_read_bank0_register(APEX_DATA3) & 0x04) >> 2;
+}
+
+uint16_t icm_42670_apex_step_count(void)
+{
+    uint8_t high = icm_42670_read_bank0_register(APEX_DATA1);
+    uint8_t low = icm_42670_read_bank0_register(APEX_DATA0);
+    return (int16_t)((high << 8) | low);
+}
+
+uint8_t icm_42670_apex_step_cadence(void)
+{
+    return icm_42670_read_bank0_register(APEX_DATA2);
+}
+
+uint8_t icm_42670_apex_pedometer_activity(void)
+{
+    return icm_42670_read_bank0_register(APEX_DATA3) & 0x03;
 }
